@@ -18,7 +18,17 @@ const io = new Server(server, {
   pingTimeout: 8000
 });
 
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1h',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      // never cache HTML — always fetch fresh
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 app.use('/shared', express.static(path.join(__dirname, 'shared'), { maxAge: '1h' }));
 app.get('/health', (_req, res) => res.status(200).send('ok'));
 
